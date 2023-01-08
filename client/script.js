@@ -82,6 +82,14 @@ const messageDiv = document.getElementById(uniqueId);
 loader(messageDiv);
 }
 
+//see changes in handleSubmit
+form.addEventListener('submit' , handleSubmit);
+form.addEventListener('keyup', (e) => {
+if (e.keyCode === 13 ) {
+handleSubmit(e);
+}
+}
+)
 
 
 
