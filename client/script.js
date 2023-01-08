@@ -59,6 +59,29 @@ alt="${isAi ? 'bot' : 'user' }"
 )
 }
 
+//trigger to get Ai response
+const handleSubmit = async (e) => {
+e.preventDefault();
+
+const data = new FormData(form);
+
+//user chatstripe
+chatContainer.innerHTML +=chatStripe(false, data.get('prompt'));
+
+form.reset();
+
+//bot chatstripe
+const uniqueId = generateUniqueId();
+chatContainer.innerHTML +=chatStripe(true , " " , uniqueId);
+//user able to scroll down while bot is responding
+
+chatContainer.scrollTop = chatContainer.scrollHeight;
+
+const messageDiv = document.getElementById(uniqueId);
+
+loader(messageDiv);
+}
+
 
 
 
