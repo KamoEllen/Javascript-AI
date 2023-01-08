@@ -1,3 +1,26 @@
+import bot from './assests/bot.svg';
+import user from './assests/user.svg';
+//logic for ai
+const form = document.querySelector('form');
+const chatContainer = document.querySelector('#chat-container');
+
+let loadInterval;
+
+//repeats every 300ms
+function loader(element) {
+element.textContext = ' ';
+
+loadInterval = setInterval(() => {
+element.textContent += '.';
+
+if (element.textContent == '....') {
+element.textContent = '';
+}
+}, 300 )
+}
+
+
+
 {/*
 import './style.css'
 import javascriptLogo from './javascript.svg'
