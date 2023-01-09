@@ -1,19 +1,17 @@
 import bot from './assets/bot.svg'
 import user from './assets/user.svg'
 
-const form = document.querySelector('form')
-const chatContainer = document.querySelector('#chat_container')
+const form = document.querySelector('form');
+const chatContainer = document.querySelector('#chat_container');
 
-let loadInterval
+let loadInterval;
 
 function loader(element) {
-    element.textContent = ''
+    element.textContent = '';
 
     loadInterval = setInterval(() => {
-        // Update the text content of the loading indicator
         element.textContent += '.';
 
-        // If the loading indicator has reached three dots, reset it
         if (element.textContent === '....') {
             element.textContent = '';
         }
@@ -33,9 +31,6 @@ function typeText(element, text) {
     }, 20)
 }
 
-// generate unique ID for each message div of bot
-// necessary for typing text effect for that specific reply
-// without unique ID, typing text will work on every element
 function generateUniqueId() {
     const timestamp = Date.now();
     const randomNumber = Math.random();
@@ -86,30 +81,32 @@ const handleSubmit = async (e) => {
     // messageDiv.innerHTML = "..."
     loader(messageDiv)
 
-    const response = await fetch('https://codex-im0y.onrender.com/', {
+    const response = await fetch('https://localhost:5000', {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json',
+            'Content-Type': 'application/json'
         },
         body: JSON.stringify({
             prompt: data.get('prompt')
         })
     })
-
+    
+    
     clearInterval(loadInterval)
-    messageDiv.innerHTML = " "
+    messageDiv.innerHTML = " ";
 
     if (response.ok) {
         const data = await response.json();
-        const parsedData = data.bot.trim() // trims any trailing spaces/'\n' 
-
-        typeText(messageDiv, parsedData)
+        const parsedData = data.bot.trim();
+       //console.log({parsedData})
+        typeText(messageDiv, parsedData);
     } else {
-        const err = await response.text()
+        const err = await response.text();
 
-        messageDiv.innerHTML = "Something went wrong"
-        alert(err)
+        messageDiv.innerHTML = "Something went wrong";
+        alert(err);
     }
+    
 }
 
 form.addEventListener('submit', handleSubmit)
