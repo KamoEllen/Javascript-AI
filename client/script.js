@@ -1,123 +1,120 @@
-import bot from './assests/bot.svg';
-import user from './assests/user.svg';
-//logic for ai
-const form = document.querySelector('form');
-const chatContainer = document.querySelector('#chat-container');
+import bot from './assets/bot.svg'
+import user from './assets/user.svg'
 
-let loadInterval;
+const form = document.querySelector('form')
+const chatContainer = document.querySelector('#chat_container')
 
-//repeats every 300ms
+let loadInterval
+
 function loader(element) {
-element.textContext = ' ';
+    element.textContent = ''
 
-loadInterval = setInterval(() => {
-element.textContent += '.';
+    loadInterval = setInterval(() => {
+        // Update the text content of the loading indicator
+        element.textContent += '.';
 
-if (element.textContent == '....') {
-element.textContent = '';
-}
-}, 300 )
-}
-
-//make ai type letter by letter for user exp
-function typeText(element, tex) {
-let index = 0;
-
-let interval =setInterval(() => {
-if (index < text.length) {
-element.innerHTML +=  text.chartAt(index);
-index++;
-}else{
-clearInterval(interval);
-}
-}, 20)
+        // If the loading indicator has reached three dots, reset it
+        if (element.textContent === '....') {
+            element.textContent = '';
+        }
+    }, 300);
 }
 
-//id for messsages
+function typeText(element, text) {
+    let index = 0
+
+    let interval = setInterval(() => {
+        if (index < text.length) {
+            element.innerHTML += text.charAt(index)
+            index++
+        } else {
+            clearInterval(interval)
+        }
+    }, 20)
+}
+
+// generate unique ID for each message div of bot
+// necessary for typing text effect for that specific reply
+// without unique ID, typing text will work on every element
 function generateUniqueId() {
-const timestamp = Date.now();
-const randomNumber = Math.random();
-const hexadecimalString = randomNumber.toString(16);
+    const timestamp = Date.now();
+    const randomNumber = Math.random();
+    const hexadecimalString = randomNumber.toString(16);
 
-return `i-${timestamp}-${hexadecimalString}`;
-
-//ai container , user container
-function chatStripe (isAi, value, uniqueId){
-return (
-`<diV class="wrapper ${isAi && 'ai'}">
-<div class="chat">
-<div className="profile">
-<img 
-src="${isAi ? bot : user }"
-alt="${isAi ? 'bot' : 'user' }"
-/>
-</div>
-<div class="message" id=${uniqueId}>${value}</div>
-</div>
-</div>
-`
-)
+    return `id-${timestamp}-${hexadecimalString}`;
 }
 
-//trigger to get Ai response
+function chatStripe(isAi, value, uniqueId) {
+    return (
+        `
+        <div class="wrapper ${isAi && 'ai'}">
+            <div class="chat">
+                <div class="profile">
+                    <img 
+                      src=${isAi ? bot : user} 
+                      alt="${isAi ? 'bot' : 'user'}" 
+                    />
+                </div>
+                <div class="message" id=${uniqueId}>${value}</div>
+            </div>
+        </div>
+    `
+    )
+}
+
 const handleSubmit = async (e) => {
-e.preventDefault();
+    e.preventDefault()
 
-const data = new FormData(form);
+    const data = new FormData(form)
 
-//user chatstripe
-chatContainer.innerHTML +=chatStripe(false, data.get('prompt'));
+    // user's chatstripe
+    chatContainer.innerHTML += chatStripe(false, data.get('prompt'))
 
-form.reset();
+    // to clear the textarea input 
+    form.reset()
 
-//bot chatstripe
-const uniqueId = generateUniqueId();
-chatContainer.innerHTML +=chatStripe(true , " " , uniqueId);
-//user able to scroll down while bot is responding
+    // bot's chatstripe
+    const uniqueId = generateUniqueId()
+    chatContainer.innerHTML += chatStripe(true, " ", uniqueId)
 
-chatContainer.scrollTop = chatContainer.scrollHeight;
+    // to focus scroll to the bottom 
+    chatContainer.scrollTop = chatContainer.scrollHeight;
 
-const messageDiv = document.getElementById(uniqueId);
+    // specific message div 
+    const messageDiv = document.getElementById(uniqueId)
 
-loader(messageDiv);
+    // messageDiv.innerHTML = "..."
+    loader(messageDiv)
+
+    const response = await fetch('https://codex-im0y.onrender.com/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            prompt: data.get('prompt')
+        })
+    })
+
+    clearInterval(loadInterval)
+    messageDiv.innerHTML = " "
+
+    if (response.ok) {
+        const data = await response.json();
+        const parsedData = data.bot.trim() // trims any trailing spaces/'\n' 
+
+        typeText(messageDiv, parsedData)
+    } else {
+        const err = await response.text()
+
+        messageDiv.innerHTML = "Something went wrong"
+        alert(err)
+    }
 }
 
-//see changes in handleSubmit
-form.addEventListener('submit' , handleSubmit);
+form.addEventListener('submit', handleSubmit)
 form.addEventListener('keyup', (e) => {
-if (e.keyCode === 13 ) {
-handleSubmit(e);
-}
-}
-)
-
-
-
-
-
-
-{/*
-import './style.css'
-import javascriptLogo from './javascript.svg'
-import { setupCounter } from './counter.js'
-
-document.querySelector('#app').innerHTML = `
-  <div>
-    <a href="https://vitejs.dev" target="_blank">
-      <img src="/vite.svg" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript" target="_blank">
-      <img src="${javascriptLogo}" class="logo vanilla" alt="JavaScript logo" />
-    </a>
-    <h1>Hello Vite!</h1>
-    <div class="card">
-      <button id="counter" type="button"></button>
-    </div>
-    <p class="read-the-docs">
-      Click on the Vite logo to learn more
-    </p>
-  </div>
-`
-
-setupCounter(document.querySelector('#counter'))
-*/}
+    if (e.keyCode === 13) {
+        handleSubmit(e)
+    }
+})
